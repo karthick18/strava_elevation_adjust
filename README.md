@@ -5,13 +5,28 @@ Tries to adjust the elevation of a gpx file taking input gpx file and target ele
 Strava does not provide elevation adjust for devices with barometric altimeter.
 
 This tries to hack around by faking a secondary track with points (lat/long/elevation) taken
-from the existing tracks to create a new modified GPX that can work with strava.
+from the existing tracks since the start of the activity to create a new modified GPX that can work with strava.
 
-In order to use this, try to provide a higher elevation value from target (very high) as strava auto-corrects the 
-timestamps and elevations during upload from the existing GPX track segment values.
+The time for the segment points duplicated are taken from the last finished segment time with a delta of 1 minute.
+This will make the activity appear continuous relative to the start points.
 
-Run it as:
-`./elevation_adjust.py sample_everesting.gpx 3000`
+## Using the tool
 
+First install pre-requisites with:
+```
+pip3 install -r requirements.txt
+```
 
+Then run it as:
 
+```./elevation_adjust.py -gpx sample_everesting.gpx -elevation 150```
+
+The above takes a gpx file as input and elevation in meters and creates a new gpx file
+with a new segment and points with elevation adjusted.
+
+Needless to say that the elevation can only be adjusted if there are existing points that can
+add up to the required/net elevation again.
+
+Happy Hacking,
+
+--Karthick

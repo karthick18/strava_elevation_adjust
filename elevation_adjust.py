@@ -19,9 +19,15 @@ class GPXModifier(object):
             raise Exception('No track segments found')
         if len(self.gpx.tracks[-1].segments[-1].points) == 0:
             raise Exception('No segment points found')
+
+        #validate if timestamp info is present in the segment points.
+        t1 = self.gpx.tracks[-1].segments[-1].points[-1].time
+        t2 = self.gpx.tracks[-1].segments[-1].points[0].time
+        if t1 is None or t2 is None:
+            raise Exception('GPX is without timestamp.'
+                            'This is typical for GPX files downloaded from strava without timestamp info.'
+                            'Try to use the GPX file from your garmin/gps watch.')
         if fake_time:
-            t1 = self.gpx.tracks[-1].segments[-1].points[-1].time
-            t2 = self.gpx.tracks[-1].segments[-1].points[0].time
             # fake a start time which is the difference between activity end/start with a delta of 60 mins on top
             delta = (t1-t2) + datetime.timedelta(minutes=60)
             self.gpx.adjust_time(delta)
@@ -80,13 +86,16 @@ def main(args):
     elevation = args.elevation
     fake_time = args.fake_time
     if not os.access(gpx_file, os.F_OK):
-        raise Exception('gpx file {} not accessible'.format(gpx_file))
+        sys.exit('gpx file {} not accessible'.format(gpx_file))
     with open(gpx_file) as f:
-        gpx_mod = GPXModifier(f, fake_time=fake_time)
+        try:
+            gpx_mod = GPXModifier(f, fake_time=fake_time)
+        except:
+            sys.exit(sys.exc_info()[1])
         print('Elevation adjust to %.2f meters for GPX %s' %(elevation, gpx_file))
         modified_gpx_xml = gpx_mod.elevation_adjust(elevation)
         if not modified_gpx_xml:
-            raise Exception('No points found to adjust to the target elevation of {:.2f}'.format(elevation))
+            sys.exit('No points found to adjust to the target elevation of {:.2f}'.format(elevation))
         parts = os.path.splitext(gpx_file)
         tail = ('modified',)
         if fake_time:

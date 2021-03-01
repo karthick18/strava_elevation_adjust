@@ -11,25 +11,28 @@ from argparse import ArgumentParser
 class GPXModifier(object):
     start_timedelta = datetime.timedelta(minutes=1)
 
-    def __init__(self, gpx_fd):
+    def __init__(self, gpx_fd, fake_time=False):
         self.gpx = gpxpy.parse(gpx_fd)
-        
+        if len(self.gpx.tracks) == 0:
+            raise Exception('No tracks found')
+        if len(self.gpx.tracks[-1].segments) == 0:
+            raise Exception('No track segments found')
+        if len(self.gpx.tracks[-1].segments[-1].points) == 0:
+            raise Exception('No segment points found')
+        if fake_time:
+            t1 = self.gpx.tracks[-1].segments[-1].points[-1].time
+            t2 = self.gpx.tracks[-1].segments[-1].points[0].time
+            # fake a start time which is the difference between activity end/start with a delta of 60 mins on top
+            delta = (t1-t2) + datetime.timedelta(minutes=60)
+            self.gpx.adjust_time(delta)
+        self.last_point = self.gpx.tracks[-1].segments[-1].points[-1]
+
     def get_points(self, elevation_in_meters):
         net = 0.0
-        track_idx = 0
         points = []
-        if len(self.gpx.tracks) == 0:
-            return None
-        l_segments = len(self.gpx.tracks[-1].segments)
-        if l_segments == 0:
-            return None
-        l_points = len(self.gpx.tracks[-1].segments[-1].points)
-        if l_points == 0:
-            return None
-        last_point = self.gpx.tracks[-1].segments[-1].points[-1]
         # start the new points for the new segment with a time delta of 1 minute from the last point
         # the segment points are sorted by time. So it should be safe
-        new_start_time = last_point.time + self.start_timedelta
+        new_start_time = self.last_point.time + self.start_timedelta
         last_time = None
         last_elevation = 0
         ## keep fetching required points from existing track/segment/points
@@ -75,16 +78,20 @@ class GPXModifier(object):
 def main(args):
     gpx_file = args.gpx
     elevation = args.elevation
+    fake_time = args.fake_time
     if not os.access(gpx_file, os.F_OK):
         raise Exception('gpx file {} not accessible'.format(gpx_file))
     with open(gpx_file) as f:
-        gpx_mod = GPXModifier(f)
+        gpx_mod = GPXModifier(f, fake_time=fake_time)
         print('Elevation adjust to %.2f meters for GPX %s' %(elevation, gpx_file))
         modified_gpx_xml = gpx_mod.elevation_adjust(elevation)
         if not modified_gpx_xml:
             raise Exception('No points found to adjust to the target elevation of {:.2f}'.format(elevation))
         parts = os.path.splitext(gpx_file)
-        new_gpx_file = '_'.join(parts[:1] + ('modified',)) + parts[-1]
+        tail = ('modified',)
+        if fake_time:
+            tail += ('fake_time',)
+        new_gpx_file = '_'.join(parts[:1] + tail) + parts[-1]
         with open(new_gpx_file, 'w') as wf:
             wf.write(modified_gpx_xml)
             print('Elevation modified and written to %s' %(new_gpx_file))
@@ -98,6 +105,9 @@ if __name__ == '__main__':
                         help='Specify GPX file to adjust the elevation')
     parser.add_argument('-elevation', '--elevation', type=float, default=10.0,
                         help='Specify elevation to adjust in meters')
+    parser.add_argument('-fake-time', '--fake-time', action='store_true',
+                        help='Fake start time for new activity')
+    parser.set_defaults(fake_time=False)
     args = parser.parse_args()
     sys.exit(main(args))
     

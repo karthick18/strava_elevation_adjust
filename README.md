@@ -21,6 +21,11 @@ Then run it as:
 
 ```./elevation_adjust.py -gpx sample_everesting.gpx -elevation 150```
 
+If you want to avoid strava duplicate entry error to just check uploads against your existing activity,
+then use option -fake-time to fake the timestamps for the activity to avoid duplicate activity error from strava.
+
+```./elevation_adjust.py -gpx sample_everesting.gpx -elevation 150 -fake-time```
+
 The above takes a gpx file as input and elevation in meters and creates a new gpx file
 with a new segment and points with elevation adjusted.
 

@@ -12,7 +12,7 @@ This will make the activity appear continuous relative to the start points.
 
 ## Using the tool
 
-Make sure you don't try to export/download the GPX file from Strava as that does not timestamp info.
+Make sure you don't try to export/download the GPX file from Strava as that does not have timestamp info.
 Try to use the one from your GPS watch/device.
 
 First install pre-requisites with:
@@ -33,7 +33,7 @@ The above takes a gpx file as input and elevation in meters and creates a new gp
 with a new segment and points with elevation adjusted.
 
 Needless to say that the elevation can only be adjusted if there are existing points that can
-add up to the required/net elevation again.
+add up to the required/net elevation gain.
 
 Happy Hacking,
 

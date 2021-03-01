@@ -4,7 +4,7 @@ Tries to adjust the elevation of a gpx file taking input gpx file and target ele
 
 Strava does not provide elevation adjust for devices with barometric altimeter.
 
-This tries to hack around by faking a secondary track with points (lat/long/elevation) taken
+This tries to *hack* around by faking a secondary track with points (lat/long/elevation) taken
 from the existing tracks since the start of the activity to create a new modified GPX that can work with strava.
 
 The time for the segment points duplicated are taken from the last finished segment time with a delta of 1 minute.
@@ -12,8 +12,8 @@ This will make the activity appear continuous relative to the start points.
 
 ## Using the tool
 
-Make sure you don't try to export/download the GPX file from Strava as that does not have timestamp info.
-Try to use the one from your GPS watch/device.
+**Make sure you don't try to export/download the GPX file from Strava as that does not have 
+timestamp info. Try to use the one from your GPS watch/device.**
 
 First install pre-requisites with:
 ```
